@@ -8,7 +8,7 @@ RAD_TO_DEG = 180/np.pi
 
 class Angle:
 
-    def __init__(self, value=0, unit:str='rad'):
+    def __init__(self, value, unit:str):
         assert unit in ['deg','rad'], "invalid unit"
         self.value = value
         self.unit = unit
@@ -81,7 +81,7 @@ class Angle:
             raise TypeError(f"Unsupported operand type(s) for +: 'Angle' and '{type(other).__name__}'")
 
     def add_in_place(self, other:'Angle'):
-        self.value += other.view(self.unit)
+        self.value += other.in_unit(self.unit)
 
     def __sub__(self, other:'Angle') -> 'Angle':
         if isinstance(other, Angle):
@@ -93,7 +93,7 @@ class Angle:
             raise TypeError(f"Unsupported operand type(s) for -: 'Vector' and '{type(other).__name__}'")
 
     def sub_in_place(self, other:'Angle'):
-        self.value -= other.view(self.unit)
+        self.value -= other.in_unit(self.unit)
 
     def distance(self:'Angle', angle2:'Angle') -> 'Angle':
         dist = self - angle2
@@ -176,13 +176,25 @@ class AngleVector:
     def __repr__(self):
         return f"{self.__class__.__name__}({self.in_unit(self.unit())} {self.unit()})"
 
-    def in_unit(self, unit) -> List:
+    def in_unit(self, unit) -> List[float]:
         assert unit in ['deg', 'rad'], 'Invalid unit'
         values = []
         for angle in self.angles:
             values.append(angle.in_unit(unit))
         return values
     
+    def in_deg(self) -> List[float]:
+        values = []
+        for angle in self.angles:
+            values.append(angle.in_deg())
+        return values
+    
+    def in_rad(self) -> List[float]:
+        values = []
+        for angle in self.angles:
+            values.append(angle.in_rad())
+        return values
+
     def convert_to(self, unit):
         assert unit in ['deg', 'rad'], 'Invalid unit'
         for angle in self.angles:
@@ -190,12 +202,13 @@ class AngleVector:
     
     def add_in_place(self, other:'AngleVector'):
         assert len(self.angles) == len(other.angles)
-        for _, idx in enumerate(self.angles):
+        for idx, _ in enumerate(self.angles):
             self.angles[idx].add_in_place(other.angles[idx])
     
     def __add__(self, other:'AngleVector') ->'AngleVector':
         if isinstance(other, AngleVector):
             new = self.copy()
+            print(new)
             new.add_in_place(other)
             return new
         else:
@@ -203,7 +216,7 @@ class AngleVector:
 
     def sub_in_place(self, other:'AngleVector'):
         assert len(self.angles) == len(other.angles)
-        for _, idx in enumerate(self.angles):
+        for idx, _ in enumerate(self.angles):
             self.angles[idx].sub_in_place(other.angles[idx])
 
     def __sub__(self, other:'AngleVector') ->'AngleVector':
@@ -219,8 +232,8 @@ class AngleVector:
         for idx, _ in enumerate(self.angles):
             self.angles[idx].clip_around(other.angles[idx], size)
 
-    def copy():
-        return AngleVector()
+    def copy(self):
+        return AngleVector(self.in_deg(), 'deg')
 
     def visualize(self):
         figure = AngleFigure()
@@ -268,3 +281,8 @@ class AngleFigure:
         """ Display the plot with all plotted angles. """
         plt.legend()
         plt.show()
+
+
+angles_1 = AngleVector([10, 20, 40], 'deg')
+angles_2 = AngleVector([30, -20, -20], 'deg')
+print(angles_1 - angles_2)
