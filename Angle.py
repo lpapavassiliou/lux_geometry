@@ -155,14 +155,12 @@ class Angle:
 
     def convert_to_closest_representation(self, other:'Angle') -> None:
         # finds the representation of 'self' which is max 180 deg away from 'other'
-        self_copy = self.copy()
-        while (self_copy - other).in_deg() > 180:
-            self_copy -= Angle(360, 'deg')
-        while(self_copy - other).in_deg() < -180:
-            print(1, self_copy)
-            self_copy += Angle(360, 'deg')
-            print(2, self_copy)
-        self.assign(self_copy)
+        new = self.copy()
+        while (new - other).in_deg() > 180:
+            new -= Angle(360, 'deg')
+        while(new - other).in_deg() < -180:
+            new += Angle(360, 'deg')
+        self.assign(new)
 
 class AngleVector:
 
@@ -230,6 +228,10 @@ class AngleVector:
             figure.plot(angle)
         figure.show()
 
+    def convert_to_closest_representation(self, other:'AngleVector'):
+        for i, _ in enumerate(self.angles):
+            self.angles[i].convert_to_closest_representation(other.angles[i])
+
 class AngleFigure:
 
     def __init__(self):
@@ -266,14 +268,3 @@ class AngleFigure:
         """ Display the plot with all plotted angles. """
         plt.legend()
         plt.show()
-
-
-if __name__ == '__main__':
-
-    vector1 = AngleVector([-90, 10, 10], 'deg')
-    vector2 = AngleVector([0, 0, 0], 'deg')
-    print(vector1)
-    vector1.visualize()
-    vector2.visualize()
-    vector1.clip_around(vector2, Angle(5, 'deg'))
-    vector1.visualize()
