@@ -208,7 +208,6 @@ class AngleVector:
     def __add__(self, other:'AngleVector') ->'AngleVector':
         if isinstance(other, AngleVector):
             new = self.copy()
-            print(new)
             new.add_in_place(other)
             return new
         else:
@@ -281,8 +280,3 @@ class AngleFigure:
         """ Display the plot with all plotted angles. """
         plt.legend()
         plt.show()
-
-
-angles_1 = AngleVector([10, 20, 40], 'deg')
-angles_2 = AngleVector([30, -20, -20], 'deg')
-print(angles_1 - angles_2)
