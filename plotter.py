@@ -1,0 +1,81 @@
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+
+
+class Visual3D:
+    def __init__(self) -> None: # Init method creates a new figure
+        self.ax = plt.figure().add_subplot(111, projection='3d')
+
+    def plot_point(self, point):
+        self.ax.scatter(point[0], point[1], point[2], c='r', marker='o')
+
+    def plot_points(self, points):
+        for point in points:
+            self.plot_point(point)
+
+    def plot_line(self, point1, point2, color=None, linewidth=1.0):
+
+        x_values = [point1[0], point2[0]]
+        y_values = [point1[1], point2[1]]
+        z_values = [point1[2], point2[2]]
+        
+        # Plot the line between the two points
+        self.ax.plot(x_values, y_values, z_values, marker='o', color=color, linewidth=linewidth)
+    
+    def plot_lines(self, lines, color=None, linewidth=1.0):
+        for line in lines:
+            self.plot_line(*line, color=color, linewidth=linewidth)
+
+    def plot_vector(self, origin, end, color=None, linewidth=None):
+        """
+        Plots a 3D vector as an arrow.
+
+        Parameters:
+        origin: The starting point of the vector [x, y, z].
+        end: The end point of the vector [x, y, z].
+        """
+
+        # Extract the components of the origin and calculate the vector components
+        x, y, z = origin
+        u, v, w = [end[i] - origin[i] for i in range(3)]
+
+        lenght = np.linalg.norm(origin - end)
+
+        # Plot the vector as an arrow
+        self.ax.quiver(x, y, z, u, v, w, length=lenght, color=color, linewidth=linewidth, normalize=True)
+
+    def plot_vectors(self, vectors, color=None, linewidth=None):
+        for vector in vectors:
+            self.plot_vector(*vector, color=color,linewidth=linewidth)
+
+    def set_ax_limits(self, dim, offset=[0, 0, 0]):
+        x_lim = [-dim + offset[0], dim + offset[0]]
+        y_lim = [-dim + offset[1], dim + offset[1]]
+        z_lim = [-dim + offset[2], dim + offset[2]]
+        self.ax.set_xlim(x_lim)
+        self.ax.set_ylim(y_lim)
+        self.ax.set_zlim(z_lim)
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+        self.ax.set_title('3D Scene')
+
+    def show(self, dim=None, offset=[0, 0, 0]):
+        if dim is not None:
+            x_lim = [-dim + offset[0], dim + offset[0]]
+            y_lim = [-dim + offset[1], dim + offset[1]]
+            z_lim = [-dim + offset[2], dim + offset[2]]
+            self.ax.set_xlim(x_lim)
+            self.ax.set_ylim(y_lim)
+            self.ax.set_zlim(z_lim)
+
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+        self.ax.set_title('3D Scene')
+        plt.show()
+    
+    @staticmethod
+    def update_animation():
+        plt.draw()
