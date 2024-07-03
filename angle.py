@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Arc
-from typing import List
+from typing import List, Union
 
 DEG_TO_RAD = np.pi/180
 RAD_TO_DEG = 180/np.pi
@@ -164,39 +164,40 @@ class Angle:
 
 class AngleVector:
 
-    def __init__(self, values=[], unit='rad') -> None:
-        assert unit in ['deg', 'rad'], 'Invalid unit'
-        self.angles : List[Angle] = []
-        for value in values:
-            self.angles.append(Angle(value, unit))
-
-    def unit(self):
-        if len(self.angles) == 0:
-            return 'rad'
-        return self.angles[0].unit
+    def __init__(self, values: Union[List[float], List[Angle]] = [], unit='rad') -> None:
+            assert unit in ['deg', 'rad'], 'Invalid unit'
+            self.angles: List[Angle] = []
+            self.unit = unit
+            if all(isinstance(value, Angle) for value in values):
+                self.angles = values
+            else:
+                for value in values:
+                    self.angles.append(Angle(value, unit))
 
     def append(self, angle:Angle):
-        angle.convert_to(self.unit())
+        angle.convert_to(self.unit)
         self.angles.append(angle)
 
     @staticmethod
-    def zeros(length) -> 'AngleVector':
-        return AngleVector(np.zeros(length), 'rad')
+    def zeros(length, unit='rad') -> 'AngleVector':
+        return AngleVector(np.zeros(length), unit)
 
     def __getitem__(self, index) -> Angle:
         if isinstance(index, slice):
             return AngleVector(self.angles[index.start:index.stop:index.step], self.unit())
         else:
-            return self.angles[index]
+            return self.angles[index].copy()
     
-    def __setitem__(self, index, angle:Angle) -> Angle:
+    def __setitem__(self, index, angle: Angle) -> None:
         if isinstance(index, slice):
-            raise(ValueError)
+            raise ValueError("Slicing is not supported for setting items.")
         else:
-            self.angles[index] = angle.convert_to(self.unit())
+            angle_copy = angle.copy()
+            angle_copy.convert_to(self.unit)
+            self.angles[index] = angle_copy
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_unit(self.unit())} {self.unit()})"
+        return f"{self.__class__.__name__}({self.in_unit(self.unit)} {self.unit})"
 
     def in_unit(self, unit) -> np.ndarray:
         assert unit in ['deg', 'rad'], 'Invalid unit'
@@ -224,6 +225,7 @@ class AngleVector:
         assert unit in ['deg', 'rad'], 'Invalid unit'
         for angle in self.angles:
             angle.convert_to(unit)
+            self.unit = unit
     
     def add_in_place(self, other:'AngleVector'):
         assert len(self.angles) == len(other.angles)
@@ -257,7 +259,7 @@ class AngleVector:
             self.angles[idx].clip_around(other.angles[idx], size)
 
     def copy(self):
-        return AngleVector(self.in_deg(), 'deg')
+        return AngleVector(self.in_unit(self.unit), self.unit)
 
     def visualize(self):
         figure = AngleFigure()
