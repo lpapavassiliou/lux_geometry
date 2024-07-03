@@ -164,35 +164,60 @@ class Angle:
 
 class AngleVector:
 
-    def __init__(self, values=[], unit='deg') -> None:
+    def __init__(self, values=[], unit='rad') -> None:
         assert unit in ['deg', 'rad'], 'Invalid unit'
         self.angles : List[Angle] = []
         for value in values:
             self.angles.append(Angle(value, unit))
-    
+
     def unit(self):
+        if len(self.angles) == 0:
+            return 'rad'
         return self.angles[0].unit
+
+    def append(self, angle:Angle):
+        angle.convert_to(self.unit())
+        self.angles.append(angle)
+
+    @staticmethod
+    def zeros(length) -> 'AngleVector':
+        return AngleVector(np.zeros(length), 'rad')
+
+    def __getitem__(self, index) -> Angle:
+        if isinstance(index, slice):
+            return AngleVector(self.angles[index.start:index.stop:index.step], self.unit())
+        else:
+            return self.angles[index]
+    
+    def __setitem__(self, index, angle:Angle) -> Angle:
+        if isinstance(index, slice):
+            raise(ValueError)
+        else:
+            self.angles[index] = angle.convert_to(self.unit())
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.in_unit(self.unit())} {self.unit()})"
 
-    def in_unit(self, unit) -> List[float]:
+    def in_unit(self, unit) -> np.ndarray:
         assert unit in ['deg', 'rad'], 'Invalid unit'
-        values = []
-        for angle in self.angles:
-            values.append(angle.in_unit(unit))
+        dim = len(self.angles)
+        values = np.zeros(dim)
+        for idx, angle in enumerate(self.angles):
+            values[idx] = (angle.in_unit(unit))
         return values
     
-    def in_deg(self) -> List[float]:
-        values = []
-        for angle in self.angles:
-            values.append(angle.in_deg())
+    def in_deg(self) -> np.ndarray:
+        dim = len(self.angles)
+        values = np.zeros(dim)
+        for idx, angle in enumerate(self.angles):
+            values[idx] = (angle.in_deg())
         return values
     
-    def in_rad(self) -> List[float]:
-        values = []
-        for angle in self.angles:
-            values.append(angle.in_rad())
+    def in_rad(self) -> np.ndarray:
+        dim = len(self.angles)
+        values = np.zeros(dim)
+        for idx, angle in enumerate(self.angles):
+            values[idx] = (angle.in_rad())
         return values
 
     def convert_to(self, unit):

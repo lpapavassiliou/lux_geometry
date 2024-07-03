@@ -7,7 +7,8 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 class Visual3D:
     def __init__(self) -> None: # Init method creates a new figure
-        self.ax = plt.figure().add_subplot(111, projection='3d')
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot(111, projection='3d')
         self.frame_scaling = 1.0
         self.force_scaling = 0.02
 
@@ -95,6 +96,36 @@ class Visual3D:
         self.ax.set_zlabel('Z')
         self.ax.set_title('3D Scene')
         plt.show()
+
+    def show_in_html(self, dim=None, offset=[0, 0, 0]):
+        if dim is not None:
+            x_lim = [-dim + offset[0], dim + offset[0]]
+            y_lim = [-dim + offset[1], dim + offset[1]]
+            z_lim = [-dim + offset[2], dim + offset[2]]
+            self.ax.set_xlim(x_lim)
+            self.ax.set_ylim(y_lim)
+            self.ax.set_zlim(z_lim)
+
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+        self.ax.set_title('3D Scene')
+        
+        import mpld3
+        import os
+        
+        # Save the plot to an HTML file
+        html_str = mpld3.fig_to_html(plt.gcf())
+        file_name = 'plot.html'
+        with open(file_name, 'w') as f:
+            f.write(html_str)
+        
+        # Print the file path so you can open it manually
+        filepath = os.path.abspath(file_name)
+        print(f'Plot saved to: file://{filepath}')
+
+    def clear(self):
+        self.ax.cla()
     
     def plot_force(self, Frame_forceLocation : Point3D, Frame_forceVector, World_T_Frame : HomogeneusMatrix = None, linewidth=3):
         if World_T_Frame is None:
@@ -116,7 +147,6 @@ class Visual3D:
         # Plot the faces
         self.ax.add_collection3d(Poly3DCollection(faces, facecolors='black', linewidths=1, edgecolors='black', alpha=.25))
 
-
     @staticmethod
-    def update_animation():
+    def update_figure():
         plt.draw()
